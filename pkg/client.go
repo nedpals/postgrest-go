@@ -1,0 +1,82 @@
+package postgrest_go
+
+import (
+	"bytes"
+	"encoding/base64"
+	"encoding/json"
+	"net/http"
+	"net/url"
+)
+
+type PostgrestClient struct {
+	session   http.Client
+	transport PostgrestTransport
+}
+
+type PostgrestClientOption func(c PostgrestClient)
+
+func NewPostgrestClient(baseURL url.URL, opts ...PostgrestClientOption) PostgrestClient {
+	transport := PostgrestTransport{
+		params:  url.Values{},
+		header:  http.Header{},
+		baseURL: baseURL,
+	}
+	c := PostgrestClient{
+		transport: transport,
+		session:   http.Client{Transport: transport},
+	}
+
+	c.transport.header.Set("Accept", "application/json")
+	c.transport.header.Set("Content-Type", "application/json")
+	c.transport.header.Set("Accept-Profile", "public")
+	c.transport.header.Set("Content-Profile", "public")
+
+	for _, opt := range opts {
+		opt(c)
+	}
+
+	return c
+}
+
+func (c PostgrestClient) From(table string) RequestBuilder {
+	return RequestBuilder{client: c, path: "/" + table}
+}
+
+func (c PostgrestClient) Rpc(f string, params interface{}) (*http.Response, error) {
+	b, err := json.Marshal(params)
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequest("POST", "/rpc/"+f, bytes.NewBuffer(b))
+	if err != nil {
+		return nil, err
+	}
+	resp, err := c.session.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (c PostgrestClient) CloseIdleConnections() {
+	c.session.CloseIdleConnections()
+}
+
+func WithTokenAuth(token string) PostgrestClientOption {
+	return func(c PostgrestClient) {
+		c.transport.header.Set("Authorization", "Bearer "+token)
+	}
+}
+
+func WithBasicAuth(username, password string) PostgrestClientOption {
+	return func(c PostgrestClient) {
+		c.transport.header.Set("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(username+":"+password)))
+	}
+}
+
+func WithSchema(schema string) PostgrestClientOption {
+	return func(c PostgrestClient) {
+		c.transport.header.Set("Accept-Profile", schema)
+		c.transport.header.Set("Content-Profile", schema)
+	}
+}
