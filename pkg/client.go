@@ -8,20 +8,20 @@ import (
 	"net/url"
 )
 
-type PostgrestClient struct {
+type Client struct {
 	session   http.Client
 	transport PostgrestTransport
 }
 
-type PostgrestClientOption func(c PostgrestClient)
+type ClientOption func(c Client)
 
-func NewPostgrestClient(baseURL url.URL, opts ...PostgrestClientOption) PostgrestClient {
+func NewClient(baseURL url.URL, opts ...ClientOption) Client {
 	transport := PostgrestTransport{
 		params:  url.Values{},
 		header:  http.Header{},
 		baseURL: baseURL,
 	}
-	c := PostgrestClient{
+	c := Client{
 		transport: transport,
 		session:   http.Client{Transport: transport},
 	}
@@ -38,11 +38,11 @@ func NewPostgrestClient(baseURL url.URL, opts ...PostgrestClientOption) Postgres
 	return c
 }
 
-func (c PostgrestClient) From(table string) RequestBuilder {
+func (c Client) From(table string) RequestBuilder {
 	return RequestBuilder{client: c, path: "/" + table}
 }
 
-func (c PostgrestClient) Rpc(f string, params interface{}) (*http.Response, error) {
+func (c Client) Rpc(f string, params interface{}) (*http.Response, error) {
 	b, err := json.Marshal(params)
 	if err != nil {
 		return nil, err
@@ -58,24 +58,24 @@ func (c PostgrestClient) Rpc(f string, params interface{}) (*http.Response, erro
 	return resp, nil
 }
 
-func (c PostgrestClient) CloseIdleConnections() {
+func (c Client) CloseIdleConnections() {
 	c.session.CloseIdleConnections()
 }
 
-func WithTokenAuth(token string) PostgrestClientOption {
-	return func(c PostgrestClient) {
+func WithTokenAuth(token string) ClientOption {
+	return func(c Client) {
 		c.transport.header.Set("Authorization", "Bearer "+token)
 	}
 }
 
-func WithBasicAuth(username, password string) PostgrestClientOption {
-	return func(c PostgrestClient) {
+func WithBasicAuth(username, password string) ClientOption {
+	return func(c Client) {
 		c.transport.header.Set("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(username+":"+password)))
 	}
 }
 
-func WithSchema(schema string) PostgrestClientOption {
-	return func(c PostgrestClient) {
+func WithSchema(schema string) ClientOption {
+	return func(c Client) {
 		c.transport.header.Set("Accept-Profile", schema)
 		c.transport.header.Set("Content-Profile", schema)
 	}

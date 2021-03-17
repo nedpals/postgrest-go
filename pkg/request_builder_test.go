@@ -6,7 +6,7 @@ import (
 )
 
 func TestRequestBuilder_Constructor(t *testing.T) {
-	client := NewPostgrestClient(url.URL{Scheme: "https", Host: "example.com"})
+	client := NewClient(url.URL{Scheme: "https", Host: "example.com"})
 	path := "/example_table"
 
 	builder := RequestBuilder{
@@ -20,7 +20,7 @@ func TestRequestBuilder_Constructor(t *testing.T) {
 }
 
 func TestRequestBuilder_Select(t *testing.T) {
-	client := NewPostgrestClient(url.URL{Scheme: "https", Host: "example.com"})
+	client := NewClient(url.URL{Scheme: "https", Host: "example.com"})
 	path := "/example_table"
 
 	builder := RequestBuilder{
@@ -42,7 +42,7 @@ func TestRequestBuilder_Select(t *testing.T) {
 }
 
 func TestRequestBuilder_Insert(t *testing.T) {
-	client := NewPostgrestClient(url.URL{Scheme: "https", Host: "example.com"})
+	client := NewClient(url.URL{Scheme: "https", Host: "example.com"})
 	path := "/example_table"
 
 	builder := RequestBuilder{
@@ -66,7 +66,7 @@ func TestRequestBuilder_Insert(t *testing.T) {
 }
 
 func TestRequestBuilder_Upsert(t *testing.T) {
-	client := NewPostgrestClient(url.URL{Scheme: "https", Host: "example.com"})
+	client := NewClient(url.URL{Scheme: "https", Host: "example.com"})
 	path := "/example_table"
 
 	builder := RequestBuilder{
@@ -90,7 +90,7 @@ func TestRequestBuilder_Upsert(t *testing.T) {
 }
 
 func TestRequestBuilder_Update(t *testing.T) {
-	client := NewPostgrestClient(url.URL{Scheme: "https", Host: "example.com"})
+	client := NewClient(url.URL{Scheme: "https", Host: "example.com"})
 	path := "/example_table"
 
 	builder := RequestBuilder{
@@ -114,7 +114,7 @@ func TestRequestBuilder_Update(t *testing.T) {
 }
 
 func TestRequestBuilder_Delete(t *testing.T) {
-	client := NewPostgrestClient(url.URL{Scheme: "https", Host: "example.com"})
+	client := NewClient(url.URL{Scheme: "https", Host: "example.com"})
 	path := "/example_table"
 
 	builder := RequestBuilder{

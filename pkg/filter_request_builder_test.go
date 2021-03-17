@@ -6,7 +6,7 @@ import (
 )
 
 func TestFilterRequestBuilder_Constructor(t *testing.T) {
-	client := NewPostgrestClient(url.URL{Scheme: "https", Host: "example.com"})
+	client := NewClient(url.URL{Scheme: "https", Host: "example.com"})
 
 	path := "/example_table"
 	httpMethod := "GET"
@@ -33,7 +33,7 @@ func TestFilterRequestBuilder_Constructor(t *testing.T) {
 }
 
 func TestFilterRequestBuilder_Not(t *testing.T) {
-	client := NewPostgrestClient(url.URL{Scheme: "https", Host: "example.com"})
+	client := NewClient(url.URL{Scheme: "https", Host: "example.com"})
 
 	path := "/example_table"
 	httpMethod := "GET"
@@ -54,7 +54,7 @@ func TestFilterRequestBuilder_Not(t *testing.T) {
 }
 
 func TestFilterRequestBuilder_Filter(t *testing.T) {
-	client := NewPostgrestClient(url.URL{Scheme: "https", Host: "example.com"})
+	client := NewClient(url.URL{Scheme: "https", Host: "example.com"})
 
 	path := "/example_table"
 	httpMethod := "GET"
@@ -80,7 +80,7 @@ func TestFilterRequestBuilder_Filter(t *testing.T) {
 }
 
 func TestFilterRequestBuilder_MultivaluedParam(t *testing.T) {
-	client := NewPostgrestClient(url.URL{Scheme: "https", Host: "example.com"})
+	client := NewClient(url.URL{Scheme: "https", Host: "example.com"})
 
 	path := "/example_table"
 	httpMethod := "GET"

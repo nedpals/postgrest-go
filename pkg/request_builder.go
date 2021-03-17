@@ -11,7 +11,7 @@ import (
 )
 
 type RequestBuilder struct {
-	client PostgrestClient
+	client Client
 	path   string
 }
 
@@ -51,7 +51,7 @@ func (b RequestBuilder) Delete() FilterRequestBuilder {
 }
 
 type QueryRequestBuilder struct {
-	client     PostgrestClient
+	client     Client
 	path       string
 	httpMethod string
 	json       interface{}

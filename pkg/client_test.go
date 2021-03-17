@@ -6,7 +6,7 @@ import (
 )
 
 func TestPostgrestClient_Constructor(t *testing.T) {
-	client := NewPostgrestClient(url.URL{Scheme: "https", Host: "example.com"})
+	client := NewClient(url.URL{Scheme: "https", Host: "example.com"})
 
 	if got := client.transport.baseURL.String(); got != "https://example.com" {
 		t.Errorf("expected baseURL == %s, got %s", "https://example.com", got)
@@ -27,7 +27,7 @@ func TestPostgrestClient_Constructor(t *testing.T) {
 }
 
 func TestPostgrestClient_TokenAuth(t *testing.T) {
-	client := NewPostgrestClient(
+	client := NewClient(
 		url.URL{Scheme: "https", Host: "example.com"},
 		WithTokenAuth("s3cr3t"))
 
@@ -37,7 +37,7 @@ func TestPostgrestClient_TokenAuth(t *testing.T) {
 }
 
 func TestPostgrestClient_BasicAuth(t *testing.T) {
-	client := NewPostgrestClient(
+	client := NewClient(
 		url.URL{Scheme: "https", Host: "example.com"},
 		WithBasicAuth("admin", "s3cr3t"))
 
@@ -47,7 +47,7 @@ func TestPostgrestClient_BasicAuth(t *testing.T) {
 }
 
 func TestPostgrestClient_Schema(t *testing.T) {
-	client := NewPostgrestClient(
+	client := NewClient(
 		url.URL{Scheme: "https", Host: "example.com"},
 		WithSchema("private"))
 

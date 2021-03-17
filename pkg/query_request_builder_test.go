@@ -6,7 +6,7 @@ import (
 )
 
 func TestQueryRequestBuilder_Constructor(t *testing.T) {
-	client := NewPostgrestClient(url.URL{Scheme: "https", Host: "example.com"})
+	client := NewClient(url.URL{Scheme: "https", Host: "example.com"})
 
 	path := "/example_table"
 	httpMethod := "GET"
