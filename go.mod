@@ -1,3 +1,3 @@
-module github.com/nedpals/postgrest-go/v0.1.1
+module github.com/nedpals/postgrest-go
 
 go 1.15
