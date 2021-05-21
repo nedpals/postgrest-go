@@ -26,10 +26,10 @@ func NewClient(baseURL url.URL, opts ...ClientOption) Client {
 		session:   http.Client{Transport: transport},
 	}
 
-	c.Transport.header.Set("Accept", "application/json")
-	c.Transport.header.Set("Content-Type", "application/json")
-	c.Transport.header.Set("Accept-Profile", "public")
-	c.Transport.header.Set("Content-Profile", "public")
+	c.Transport.AddHeader("Accept", "application/json")
+	c.Transport.AddHeader("Content-Type", "application/json")
+	c.Transport.AddHeader("Accept-Profile", "public")
+	c.Transport.AddHeader("Content-Profile", "public")
 
 	for _, opt := range opts {
 		opt(c)
@@ -64,19 +64,19 @@ func (c Client) CloseIdleConnections() {
 
 func WithTokenAuth(token string) ClientOption {
 	return func(c Client) {
-		c.Transport.header.Set("Authorization", "Bearer "+token)
+		c.Transport.AddHeader("Authorization", "Bearer "+token)
 	}
 }
 
 func WithBasicAuth(username, password string) ClientOption {
 	return func(c Client) {
-		c.Transport.header.Set("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(username+":"+password)))
+		c.Transport.AddHeader("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(username+":"+password)))
 	}
 }
 
 func WithSchema(schema string) ClientOption {
 	return func(c Client) {
-		c.Transport.header.Set("Accept-Profile", schema)
-		c.Transport.header.Set("Content-Profile", schema)
+		c.Transport.AddHeader("Accept-Profile", schema)
+		c.Transport.AddHeader("Content-Profile", schema)
 	}
 }

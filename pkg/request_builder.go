@@ -216,12 +216,12 @@ func (b SelectRequestBuilder) Limit(size int) SelectRequestBuilder {
 }
 
 func (b SelectRequestBuilder) LimitWithOffset(size int, start int) SelectRequestBuilder {
-	b.client.Transport.header.Set("Range-Unit", "items")
-	b.client.Transport.header.Set("Range", fmt.Sprintf("%d-%d", start, start+size-1))
+	b.client.Transport.AddHeader("Range-Unit", "items")
+	b.client.Transport.AddHeader("Range", fmt.Sprintf("%d-%d", start, start+size-1))
 	return b
 }
 
 func (b SelectRequestBuilder) Single() SelectRequestBuilder {
-	b.client.Transport.header.Set("Accept", "application/vnd.pgrst.object+json")
+	b.client.Transport.AddHeader("Accept", "application/vnd.pgrst.object+json")
 	return b
 }
