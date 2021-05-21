@@ -20,6 +20,7 @@ func NewClient(baseURL url.URL, opts ...ClientOption) Client {
 		params:  url.Values{},
 		header:  http.Header{},
 		baseURL: baseURL,
+		parent:  http.DefaultTransport,
 	}
 	c := Client{
 		Transport: transport,

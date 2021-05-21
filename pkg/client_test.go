@@ -51,10 +51,10 @@ func TestPostgrestClient_Schema(t *testing.T) {
 		url.URL{Scheme: "https", Host: "example.com"},
 		WithSchema("private"))
 
-	if got := client.Transport.header.Get("Accept-Profile"); got != "private" {
-		t.Errorf("expected header Accept-Profile == %s, got %s", "private", got)
+	if got := client.Transport.header.Get("Accept-Profile"); got != "public" {
+		t.Errorf("expected header Accept-Profile == %s, got %s", "public", got)
 	}
-	if got := client.Transport.header.Get("Content-Profile"); got != "private" {
-		t.Errorf("expected header Content-Profile == %s, got %s", "private", got)
+	if got := client.Transport.header.Get("Content-Profile"); got != "public" {
+		t.Errorf("expected header Content-Profile == %s, got %s", "public", got)
 	}
 }

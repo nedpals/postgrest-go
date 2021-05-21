@@ -19,6 +19,7 @@ func (c PostgrestTransport) AddHeader(key string, value string) {
 
 func (c PostgrestTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header = c.header
+	req.URL.Path = req.URL.Path[1:]
 	req.URL = c.baseURL.ResolveReference(req.URL)
 	req.URL.RawQuery = c.params.Encode()
 	return c.parent.RoundTrip(req)
