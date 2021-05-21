@@ -10,7 +10,7 @@ import (
 
 type Client struct {
 	session   http.Client
-	transport PostgrestTransport
+	Transport PostgrestTransport
 }
 
 type ClientOption func(c Client)
@@ -22,14 +22,14 @@ func NewClient(baseURL url.URL, opts ...ClientOption) Client {
 		baseURL: baseURL,
 	}
 	c := Client{
-		transport: transport,
+		Transport: transport,
 		session:   http.Client{Transport: transport},
 	}
 
-	c.transport.header.Set("Accept", "application/json")
-	c.transport.header.Set("Content-Type", "application/json")
-	c.transport.header.Set("Accept-Profile", "public")
-	c.transport.header.Set("Content-Profile", "public")
+	c.Transport.header.Set("Accept", "application/json")
+	c.Transport.header.Set("Content-Type", "application/json")
+	c.Transport.header.Set("Accept-Profile", "public")
+	c.Transport.header.Set("Content-Profile", "public")
 
 	for _, opt := range opts {
 		opt(c)
@@ -64,19 +64,19 @@ func (c Client) CloseIdleConnections() {
 
 func WithTokenAuth(token string) ClientOption {
 	return func(c Client) {
-		c.transport.header.Set("Authorization", "Bearer "+token)
+		c.Transport.header.Set("Authorization", "Bearer "+token)
 	}
 }
 
 func WithBasicAuth(username, password string) ClientOption {
 	return func(c Client) {
-		c.transport.header.Set("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(username+":"+password)))
+		c.Transport.header.Set("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(username+":"+password)))
 	}
 }
 
 func WithSchema(schema string) ClientOption {
 	return func(c Client) {
-		c.transport.header.Set("Accept-Profile", schema)
-		c.transport.header.Set("Content-Profile", schema)
+		c.Transport.header.Set("Accept-Profile", schema)
+		c.Transport.header.Set("Content-Profile", schema)
 	}
 }

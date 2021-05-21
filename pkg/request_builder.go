@@ -16,7 +16,7 @@ type RequestBuilder struct {
 }
 
 func (b RequestBuilder) Select(columns ...string) SelectRequestBuilder {
-	b.client.transport.params.Set("select", strings.Join(columns, ","))
+	b.client.Transport.params.Set("select", strings.Join(columns, ","))
 	return SelectRequestBuilder{
 		FilterRequestBuilder{
 			QueryRequestBuilder: QueryRequestBuilder{client: b.client, path: b.path, httpMethod: "GET"},
@@ -26,17 +26,17 @@ func (b RequestBuilder) Select(columns ...string) SelectRequestBuilder {
 }
 
 func (b RequestBuilder) Insert(json interface{}) QueryRequestBuilder {
-	b.client.transport.header.Add("Prefer", "return=representation")
+	b.client.Transport.header.Add("Prefer", "return=representation")
 	return QueryRequestBuilder{client: b.client, path: b.path, httpMethod: "POST", json: json}
 }
 
 func (b RequestBuilder) Upsert(json interface{}) QueryRequestBuilder {
-	b.client.transport.header.Add("Prefer", "return=representation,resolution=merge-duplicates")
+	b.client.Transport.header.Add("Prefer", "return=representation,resolution=merge-duplicates")
 	return QueryRequestBuilder{client: b.client, path: b.path, httpMethod: "POST", json: json}
 }
 
 func (b RequestBuilder) Update(json interface{}) FilterRequestBuilder {
-	b.client.transport.header.Add("Prefer", "return=representation")
+	b.client.Transport.header.Add("Prefer", "return=representation")
 	return FilterRequestBuilder{
 		QueryRequestBuilder: QueryRequestBuilder{client: b.client, path: b.path, httpMethod: "PATCH", json: json},
 		negateNext:          false,
@@ -99,7 +99,7 @@ func (b FilterRequestBuilder) Filter(column, operator, criteria string) FilterRe
 		b.negateNext = false
 		operator = "not." + operator
 	}
-	b.client.transport.params.Add(SanitizeParam(column), operator+"."+criteria)
+	b.client.Transport.params.Add(SanitizeParam(column), operator+"."+criteria)
 	return b
 }
 
@@ -216,12 +216,12 @@ func (b SelectRequestBuilder) Limit(size int) SelectRequestBuilder {
 }
 
 func (b SelectRequestBuilder) LimitWithOffset(size int, start int) SelectRequestBuilder {
-	b.client.transport.header.Set("Range-Unit", "items")
-	b.client.transport.header.Set("Range", fmt.Sprintf("%d-%d", start, start+size-1))
+	b.client.Transport.header.Set("Range-Unit", "items")
+	b.client.Transport.header.Set("Range", fmt.Sprintf("%d-%d", start, start+size-1))
 	return b
 }
 
 func (b SelectRequestBuilder) Single() SelectRequestBuilder {
-	b.client.transport.header.Set("Accept", "application/vnd.pgrst.object+json")
+	b.client.Transport.header.Set("Accept", "application/vnd.pgrst.object+json")
 	return b
 }

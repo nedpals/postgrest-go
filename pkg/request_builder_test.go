@@ -30,7 +30,7 @@ func TestRequestBuilder_Select(t *testing.T) {
 
 	s := builder.Select("col1", "col2")
 
-	if got := s.client.transport.params.Get("select"); got != "col1,col2" {
+	if got := s.client.Transport.params.Get("select"); got != "col1,col2" {
 		t.Errorf("expected param select == %s, got %s", "col1,col2", got)
 	}
 	if s.httpMethod != "GET" {
@@ -54,7 +54,7 @@ func TestRequestBuilder_Insert(t *testing.T) {
 
 	s := builder.Insert(json)
 
-	if got := s.client.transport.header.Get("prefer"); got != "return=representation" {
+	if got := s.client.Transport.header.Get("prefer"); got != "return=representation" {
 		t.Errorf("expected param select == %s, got %s", "return=representation", got)
 	}
 	if s.httpMethod != "POST" {
@@ -78,7 +78,7 @@ func TestRequestBuilder_Upsert(t *testing.T) {
 
 	s := builder.Upsert(json)
 
-	if got := s.client.transport.header.Get("prefer"); got != "return=representation,resolution=merge-duplicates" {
+	if got := s.client.Transport.header.Get("prefer"); got != "return=representation,resolution=merge-duplicates" {
 		t.Errorf("expected param select == %s, got %s", "return=representation,resolution=merge-duplicates", got)
 	}
 	if s.httpMethod != "POST" {
@@ -102,7 +102,7 @@ func TestRequestBuilder_Update(t *testing.T) {
 
 	s := builder.Update(json)
 
-	if got := s.client.transport.header.Get("prefer"); got != "return=representation" {
+	if got := s.client.Transport.header.Get("prefer"); got != "return=representation" {
 		t.Errorf("expected param select == %s, got %s", "return=representation", got)
 	}
 	if s.httpMethod != "PATCH" {

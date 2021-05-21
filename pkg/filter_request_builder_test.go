@@ -72,7 +72,7 @@ func TestFilterRequestBuilder_Filter(t *testing.T) {
 	builder = builder.Filter(":col.name", "eq", "val")
 
 	want := "eq.val"
-	got := builder.client.transport.params.Get("\":col.name\"")
+	got := builder.client.Transport.params.Get("\":col.name\"")
 
 	if want != got {
 		t.Errorf("expected http param \":col.name\" == %s, got %s", want, got)
@@ -98,7 +98,7 @@ func TestFilterRequestBuilder_MultivaluedParam(t *testing.T) {
 	builder = builder.Lte("x", "a").Gte("x", "b")
 
 	want := "x=lte.a&x=gte.b"
-	got := builder.client.transport.params.Encode()
+	got := builder.client.Transport.params.Encode()
 
 	if want != got {
 		t.Errorf("expected http params.Encode() == %s, got %s", want, got)
