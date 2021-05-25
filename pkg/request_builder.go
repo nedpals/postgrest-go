@@ -10,6 +10,19 @@ import (
 	"strings"
 )
 
+// TODO test
+type RequestError struct {
+	Message        string `json:"message"`
+	Details        string `json:"details"`
+	Hint           string `json:"hint"`
+	Code           string `json:"code"`
+	HTTPStatusCode int    `json:"-"`
+}
+
+func (rq *RequestError) Error() string {
+	return fmt.Sprintf("%s: %s", rq.Code, rq.Message)
+}
+
 type RequestBuilder struct {
 	client Client
 	path   string
@@ -77,6 +90,15 @@ func (b QueryRequestBuilder) ExecuteWithContext(ctx context.Context, r interface
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
+	}
+	if resp.StatusCode != 200 {
+		reqError := RequestError{HTTPStatusCode: resp.StatusCode}
+
+		if err = json.Unmarshal(body, &reqError); err != nil {
+			return err
+		}
+
+		return &reqError
 	}
 	if err = json.Unmarshal(body, r); err != nil {
 		return err
