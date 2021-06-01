@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 )
 
 type Client struct {
 	session   http.Client
+	Debug     bool
 	Transport PostgrestTransport
 }
 
@@ -22,6 +24,7 @@ func NewClient(baseURL url.URL, opts ...ClientOption) Client {
 		baseURL: baseURL,
 		parent:  http.DefaultTransport,
 	}
+
 	c := Client{
 		Transport: transport,
 		session:   http.Client{Transport: transport},
@@ -36,6 +39,10 @@ func NewClient(baseURL url.URL, opts ...ClientOption) Client {
 		opt(c)
 	}
 
+	if c.Debug {
+		fmt.Println("CAUTION! Please make sure to disable the debug option before deploying it to production.")
+		c.Transport.debug = c.Debug
+	}
 	return c
 }
 
