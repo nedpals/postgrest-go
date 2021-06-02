@@ -59,7 +59,7 @@ func TestFilterRequestBuilder_Filter(t *testing.T) {
 	path := "/example_table"
 	httpMethod := "GET"
 
-	builder := FilterRequestBuilder{
+	builder := &FilterRequestBuilder{
 		QueryRequestBuilder: QueryRequestBuilder{
 			client:     client,
 			path:       path,
@@ -85,7 +85,7 @@ func TestFilterRequestBuilder_MultivaluedParam(t *testing.T) {
 	path := "/example_table"
 	httpMethod := "GET"
 
-	builder := FilterRequestBuilder{
+	builder := &FilterRequestBuilder{
 		QueryRequestBuilder: QueryRequestBuilder{
 			client:     client,
 			path:       path,

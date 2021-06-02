@@ -46,7 +46,7 @@ func NewClient(baseURL url.URL, opts ...ClientOption) *Client {
 	return &c
 }
 
-func (c Client) From(table string) *RequestBuilder {
+func (c *Client) From(table string) *RequestBuilder {
 	return &RequestBuilder{client: c, path: "/" + table}
 }
 

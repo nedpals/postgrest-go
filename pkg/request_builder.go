@@ -24,7 +24,7 @@ func (rq *RequestError) Error() string {
 }
 
 type RequestBuilder struct {
-	client Client
+	client *Client
 	path   string
 }
 
@@ -64,7 +64,7 @@ func (b *RequestBuilder) Delete() *FilterRequestBuilder {
 }
 
 type QueryRequestBuilder struct {
-	client     Client
+	client     *Client
 	path       string
 	httpMethod string
 	json       interface{}
