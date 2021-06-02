@@ -17,11 +17,16 @@ type PostgrestTransport struct {
 }
 
 func (c PostgrestTransport) AddHeader(key string, value string) {
-	c.header.Add(key, value)
+	c.header.Set(key, value)
 }
 
 func (c PostgrestTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header = c.header
+	for key, vals := range c.header {
+		for _, val := range vals {
+			req.Header.Set(key, val)
+		}
+	}
+
 	req.URL.Path = req.URL.Path[1:]
 	req.URL = c.baseURL.ResolveReference(req.URL)
 	req.URL.RawQuery = c.params.Encode()

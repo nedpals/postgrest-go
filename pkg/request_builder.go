@@ -87,6 +87,8 @@ func (b QueryRequestBuilder) ExecuteWithContext(ctx context.Context, r interface
 	if err != nil {
 		return err
 	}
+
+	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
@@ -238,12 +240,12 @@ func (b SelectRequestBuilder) Limit(size int) SelectRequestBuilder {
 }
 
 func (b SelectRequestBuilder) LimitWithOffset(size int, start int) SelectRequestBuilder {
-	b.client.Transport.AddHeader("Range-Unit", "items")
-	b.client.Transport.AddHeader("Range", fmt.Sprintf("%d-%d", start, start+size-1))
+	b.client.Transport.header.Add("Range-Unit", "items")
+	b.client.Transport.header.Add("Range", fmt.Sprintf("%d-%d", start, start+size-1))
 	return b
 }
 
 func (b SelectRequestBuilder) Single() SelectRequestBuilder {
-	b.client.Transport.AddHeader("Accept", "application/vnd.pgrst.object+json")
+	b.client.Transport.header.Add("Accept", "application/vnd.pgrst.object+json")
 	return b
 }
