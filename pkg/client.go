@@ -17,7 +17,7 @@ type Client struct {
 
 type ClientOption func(c Client)
 
-func NewClient(baseURL url.URL, opts ...ClientOption) Client {
+func NewClient(baseURL url.URL, opts ...ClientOption) *Client {
 	transport := PostgrestTransport{
 		params:  url.Values{},
 		header:  http.Header{},
@@ -43,11 +43,11 @@ func NewClient(baseURL url.URL, opts ...ClientOption) Client {
 		fmt.Println("CAUTION! Please make sure to disable the debug option before deploying it to production.")
 		c.Transport.debug = c.Debug
 	}
-	return c
+	return &c
 }
 
-func (c Client) From(table string) RequestBuilder {
-	return RequestBuilder{client: c, path: "/" + table}
+func (c Client) From(table string) *RequestBuilder {
+	return &RequestBuilder{client: c, path: "/" + table}
 }
 
 func (c Client) Rpc(f string, params interface{}) (*http.Response, error) {
