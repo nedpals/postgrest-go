@@ -1,6 +1,7 @@
 package postgrest_go
 
 import (
+	"net/http"
 	"net/url"
 	"testing"
 )
@@ -26,11 +27,12 @@ func TestRequestBuilder_Select(t *testing.T) {
 	builder := RequestBuilder{
 		client: client,
 		path:   path,
+		params: url.Values{},
 	}
 
 	s := builder.Select("col1", "col2")
 
-	if got := s.client.Transport.params.Get("select"); got != "col1,col2" {
+	if got := s.params.Get("select"); got != "col1,col2" {
 		t.Errorf("expected param select == %s, got %s", "col1,col2", got)
 	}
 	if s.httpMethod != "GET" {
@@ -48,13 +50,15 @@ func TestRequestBuilder_Insert(t *testing.T) {
 	builder := RequestBuilder{
 		client: client,
 		path:   path,
+		header: http.Header{},
+		params: url.Values{},
 	}
 
 	json := struct{ key1 string }{key1: "val1"}
 
 	s := builder.Insert(json)
 
-	if got := s.client.Transport.header.Get("prefer"); got != "return=representation" {
+	if got := s.header.Get("prefer"); got != "return=representation" {
 		t.Errorf("expected param select == %s, got %s", "return=representation", got)
 	}
 	if s.httpMethod != "POST" {
@@ -72,13 +76,15 @@ func TestRequestBuilder_Upsert(t *testing.T) {
 	builder := RequestBuilder{
 		client: client,
 		path:   path,
+		header: http.Header{},
+		params: url.Values{},
 	}
 
 	json := struct{ key1 string }{key1: "val1"}
 
 	s := builder.Upsert(json)
 
-	if got := s.client.Transport.header.Get("prefer"); got != "return=representation,resolution=merge-duplicates" {
+	if got := s.header.Get("prefer"); got != "return=representation,resolution=merge-duplicates" {
 		t.Errorf("expected param select == %s, got %s", "return=representation,resolution=merge-duplicates", got)
 	}
 	if s.httpMethod != "POST" {
@@ -96,13 +102,13 @@ func TestRequestBuilder_Update(t *testing.T) {
 	builder := RequestBuilder{
 		client: client,
 		path:   path,
+		header: http.Header{},
 	}
 
 	json := struct{ key1 string }{key1: "val1"}
-
 	s := builder.Update(json)
 
-	if got := s.client.Transport.header.Get("prefer"); got != "return=representation" {
+	if got := s.header.Get("prefer"); got != "return=representation" {
 		t.Errorf("expected param select == %s, got %s", "return=representation", got)
 	}
 	if s.httpMethod != "PATCH" {

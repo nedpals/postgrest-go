@@ -1,6 +1,7 @@
 package postgrest_go
 
 import (
+	"net/http"
 	"net/url"
 	"testing"
 )
@@ -36,7 +37,7 @@ func TestFilterRequestBuilder_Not(t *testing.T) {
 	client := NewClient(url.URL{Scheme: "https", Host: "example.com"})
 
 	path := "/example_table"
-	httpMethod := "GET"
+	httpMethod := http.MethodGet
 
 	builder := FilterRequestBuilder{
 		QueryRequestBuilder: QueryRequestBuilder{
@@ -57,7 +58,7 @@ func TestFilterRequestBuilder_Filter(t *testing.T) {
 	client := NewClient(url.URL{Scheme: "https", Host: "example.com"})
 
 	path := "/example_table"
-	httpMethod := "GET"
+	httpMethod := http.MethodGet
 
 	builder := &FilterRequestBuilder{
 		QueryRequestBuilder: QueryRequestBuilder{
@@ -65,6 +66,7 @@ func TestFilterRequestBuilder_Filter(t *testing.T) {
 			path:       path,
 			httpMethod: httpMethod,
 			json:       nil,
+			params:     url.Values{},
 		},
 		negateNext: false,
 	}
@@ -72,7 +74,7 @@ func TestFilterRequestBuilder_Filter(t *testing.T) {
 	builder = builder.Filter(":col.name", "eq", "val")
 
 	want := "eq.val"
-	got := builder.client.Transport.params.Get("\":col.name\"")
+	got := builder.params.Get("\":col.name\"")
 
 	if want != got {
 		t.Errorf("expected http param \":col.name\" == %s, got %s", want, got)
@@ -83,7 +85,7 @@ func TestFilterRequestBuilder_MultivaluedParam(t *testing.T) {
 	client := NewClient(url.URL{Scheme: "https", Host: "example.com"})
 
 	path := "/example_table"
-	httpMethod := "GET"
+	httpMethod := http.MethodGet
 
 	builder := &FilterRequestBuilder{
 		QueryRequestBuilder: QueryRequestBuilder{
@@ -91,6 +93,7 @@ func TestFilterRequestBuilder_MultivaluedParam(t *testing.T) {
 			path:       path,
 			httpMethod: httpMethod,
 			json:       nil,
+			params:     url.Values{},
 		},
 		negateNext: false,
 	}
@@ -98,7 +101,7 @@ func TestFilterRequestBuilder_MultivaluedParam(t *testing.T) {
 	builder = builder.Lte("x", "a").Gte("x", "b")
 
 	want := "x=lte.a&x=gte.b"
-	got := builder.client.Transport.params.Encode()
+	got := builder.params.Encode()
 
 	if want != got {
 		t.Errorf("expected http params.Encode() == %s, got %s", want, got)

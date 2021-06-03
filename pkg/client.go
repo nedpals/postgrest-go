@@ -10,33 +10,33 @@ import (
 )
 
 type Client struct {
-	session   http.Client
-	Debug     bool
-	Transport PostgrestTransport
+	session        http.Client
+	Debug          bool
+	defaultHeaders http.Header
+	Transport      *PostgrestTransport
 }
 
-type ClientOption func(c Client)
+type ClientOption func(c *Client)
 
 func NewClient(baseURL url.URL, opts ...ClientOption) *Client {
 	transport := PostgrestTransport{
-		params:  url.Values{},
-		header:  http.Header{},
 		baseURL: baseURL,
 		parent:  http.DefaultTransport,
 	}
 
 	c := Client{
-		Transport: transport,
-		session:   http.Client{Transport: transport},
+		Transport:      &transport,
+		defaultHeaders: http.Header{},
+		session:        http.Client{Transport: &transport},
 	}
 
-	c.Transport.AddHeader("Accept", "application/json")
-	c.Transport.AddHeader("Content-Type", "application/json")
-	c.Transport.AddHeader("Accept-Profile", "public")
-	c.Transport.AddHeader("Content-Profile", "public")
+	c.defaultHeaders.Set("Accept", "application/json")
+	c.defaultHeaders.Set("Content-Type", "application/json")
+	c.defaultHeaders.Set("Accept-Profile", "public")
+	c.defaultHeaders.Set("Content-Profile", "public")
 
 	for _, opt := range opts {
-		opt(c)
+		opt(&c)
 	}
 
 	if c.Debug {
@@ -47,7 +47,12 @@ func NewClient(baseURL url.URL, opts ...ClientOption) *Client {
 }
 
 func (c *Client) From(table string) *RequestBuilder {
-	return &RequestBuilder{client: c, path: "/" + table}
+	return &RequestBuilder{
+		client: c,
+		path:   "/" + table,
+		header: http.Header{},
+		params: url.Values{},
+	}
 }
 
 func (c Client) Rpc(f string, params interface{}) (*http.Response, error) {
@@ -55,10 +60,13 @@ func (c Client) Rpc(f string, params interface{}) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	req, err := http.NewRequest("POST", "/rpc/"+f, bytes.NewBuffer(b))
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header = c.Headers()
 	resp, err := c.session.Do(req)
 	if err != nil {
 		return nil, err
@@ -67,25 +75,33 @@ func (c Client) Rpc(f string, params interface{}) (*http.Response, error) {
 	return resp, nil
 }
 
-func (c Client) CloseIdleConnections() {
+func (c *Client) CloseIdleConnections() {
 	c.session.CloseIdleConnections()
 }
 
+func (c *Client) Headers() http.Header {
+	return c.defaultHeaders.Clone()
+}
+
+func (c *Client) AddHeader(key string, value string) {
+	c.defaultHeaders.Set(key, value)
+}
+
 func WithTokenAuth(token string) ClientOption {
-	return func(c Client) {
-		c.Transport.AddHeader("Authorization", "Bearer "+token)
+	return func(c *Client) {
+		c.AddHeader("Authorization", "Bearer "+token)
 	}
 }
 
 func WithBasicAuth(username, password string) ClientOption {
-	return func(c Client) {
-		c.Transport.AddHeader("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(username+":"+password)))
+	return func(c *Client) {
+		c.AddHeader("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(username+":"+password)))
 	}
 }
 
 func WithSchema(schema string) ClientOption {
-	return func(c Client) {
-		c.Transport.AddHeader("Accept-Profile", schema)
-		c.Transport.AddHeader("Content-Profile", schema)
+	return func(c *Client) {
+		c.AddHeader("Accept-Profile", schema)
+		c.AddHeader("Content-Profile", schema)
 	}
 }

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -26,45 +27,83 @@ func (rq *RequestError) Error() string {
 type RequestBuilder struct {
 	client *Client
 	path   string
+	params url.Values
+	header http.Header
 }
 
 func (b *RequestBuilder) Select(columns ...string) *SelectRequestBuilder {
-	b.client.Transport.params.Set("select", strings.Join(columns, ","))
+	b.params.Set("select", strings.Join(columns, ","))
 	return &SelectRequestBuilder{
 		FilterRequestBuilder{
-			QueryRequestBuilder: QueryRequestBuilder{client: b.client, path: b.path, httpMethod: "GET"},
-			negateNext:          false,
+			QueryRequestBuilder: QueryRequestBuilder{
+				client:     b.client,
+				path:       b.path,
+				httpMethod: "GET",
+				header:     b.header,
+				params:     b.params,
+			},
+			negateNext: false,
 		},
 	}
 }
 
 func (b *RequestBuilder) Insert(json interface{}) *QueryRequestBuilder {
-	b.client.Transport.header.Add("Prefer", "return=representation")
-	return &QueryRequestBuilder{client: b.client, path: b.path, httpMethod: "POST", json: json}
+	b.header.Set("Prefer", "return=representation")
+	return &QueryRequestBuilder{
+		client:     b.client,
+		path:       b.path,
+		httpMethod: http.MethodPost,
+		json:       json,
+		params:     b.params,
+		header:     b.header,
+	}
 }
 
 func (b *RequestBuilder) Upsert(json interface{}) *QueryRequestBuilder {
-	b.client.Transport.header.Add("Prefer", "return=representation,resolution=merge-duplicates")
-	return &QueryRequestBuilder{client: b.client, path: b.path, httpMethod: "POST", json: json}
+	b.header.Set("Prefer", "return=representation,resolution=merge-duplicates")
+	return &QueryRequestBuilder{
+		client:     b.client,
+		path:       b.path,
+		httpMethod: http.MethodPost,
+		json:       json,
+		params:     b.params,
+		header:     b.header,
+	}
 }
 
 func (b *RequestBuilder) Update(json interface{}) *FilterRequestBuilder {
-	b.client.Transport.header.Add("Prefer", "return=representation")
+	b.header.Set("Prefer", "return=representation")
 	return &FilterRequestBuilder{
-		QueryRequestBuilder: QueryRequestBuilder{client: b.client, path: b.path, httpMethod: "PATCH", json: json},
-		negateNext:          false,
+		QueryRequestBuilder: QueryRequestBuilder{
+			client:     b.client,
+			path:       b.path,
+			httpMethod: http.MethodPatch,
+			json:       json,
+			params:     b.params,
+			header:     b.header,
+		},
+		negateNext: false,
 	}
 }
 
 func (b *RequestBuilder) Delete() *FilterRequestBuilder {
 	return &FilterRequestBuilder{
-		QueryRequestBuilder: QueryRequestBuilder{client: b.client, path: b.path, httpMethod: "DELETE", json: nil},
-		negateNext:          false,
+		QueryRequestBuilder: QueryRequestBuilder{
+			client:     b.client,
+			path:       b.path,
+			httpMethod: http.MethodDelete,
+			json:       nil,
+			params:     b.params,
+			header:     b.header,
+		},
+		negateNext: false,
 	}
 }
 
 type QueryRequestBuilder struct {
 	client     *Client
+	params     url.Values
+	header     http.Header
 	path       string
 	httpMethod string
 	json       interface{}
@@ -83,6 +122,20 @@ func (b *QueryRequestBuilder) ExecuteWithContext(ctx context.Context, r interfac
 	if err != nil {
 		return err
 	}
+
+	req.URL.RawQuery = b.params.Encode()
+	req.Header = b.client.Headers()
+
+	// inject/override custom headers
+	for key, vals := range b.header {
+		for _, val := range vals {
+			req.Header.Set(key, val)
+		}
+	}
+
+	req.URL.Path = req.URL.Path[1:]
+	req.URL = b.client.Transport.baseURL.ResolveReference(req.URL)
+
 	resp, err := b.client.session.Do(req)
 	if err != nil {
 		return err
@@ -123,7 +176,7 @@ func (b *FilterRequestBuilder) Filter(column, operator, criteria string) *Filter
 		b.negateNext = false
 		operator = "not." + operator
 	}
-	b.client.Transport.params.Add(SanitizeParam(column), operator+"."+criteria)
+	b.params.Add(SanitizeParam(column), operator+"."+criteria)
 	return b
 }
 
@@ -240,12 +293,12 @@ func (b *SelectRequestBuilder) Limit(size int) *SelectRequestBuilder {
 }
 
 func (b *SelectRequestBuilder) LimitWithOffset(size int, start int) *SelectRequestBuilder {
-	b.client.Transport.header.Add("Range-Unit", "items")
-	b.client.Transport.header.Add("Range", fmt.Sprintf("%d-%d", start, start+size-1))
+	b.header.Set("Range-Unit", "items")
+	b.header.Set("Range", fmt.Sprintf("%d-%d", start, start+size-1))
 	return b
 }
 
 func (b *SelectRequestBuilder) Single() *SelectRequestBuilder {
-	b.client.Transport.header.Add("Accept", "application/vnd.pgrst.object+json")
+	b.header.Set("Accept", "application/vnd.pgrst.object+json")
 	return b
 }
