@@ -146,7 +146,9 @@ func (b *QueryRequestBuilder) ExecuteWithContext(ctx context.Context, r interfac
 	if err != nil {
 		return err
 	}
-	if resp.StatusCode != 200 {
+
+	statusOK := resp.StatusCode >= 200 && resp.StatusCode < 300
+	if !statusOK {
 		reqError := RequestError{HTTPStatusCode: resp.StatusCode}
 
 		if err = json.Unmarshal(body, &reqError); err != nil {
@@ -155,9 +157,13 @@ func (b *QueryRequestBuilder) ExecuteWithContext(ctx context.Context, r interfac
 
 		return &reqError
 	}
-	if err = json.Unmarshal(body, r); err != nil {
-		return err
+
+	if resp.StatusCode != http.StatusNoContent && r != nil {
+		if err = json.Unmarshal(body, r); err != nil {
+			return err
+		}
 	}
+
 	return nil
 }
 
