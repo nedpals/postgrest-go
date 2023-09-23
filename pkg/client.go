@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 )
@@ -55,24 +56,48 @@ func (c *Client) From(table string) *RequestBuilder {
 	}
 }
 
-func (c Client) Rpc(f string, params interface{}) (*http.Response, error) {
+func (c Client) Rpc(f string, params interface{}, r interface{}) error {
 	b, err := json.Marshal(params)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	req, err := http.NewRequest("POST", "/rpc/"+f, bytes.NewBuffer(b))
+	req, err := http.NewRequest("POST", "rpc/"+f, bytes.NewBuffer(b))
+	req.URL = c.Transport.baseURL.ResolveReference(req.URL)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	req.Header = c.Headers()
 	resp, err := c.session.Do(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer resp.Body.Close()
-	return resp, nil
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	statusOK := resp.StatusCode >= 200 && resp.StatusCode < 300
+	if !statusOK {
+		reqError := RequestError{HTTPStatusCode: resp.StatusCode}
+
+		if err = json.Unmarshal(body, &reqError); err != nil {
+			return err
+		}
+
+		return &reqError
+	}
+
+	if resp.StatusCode != http.StatusNoContent && r != nil {
+		if err = json.Unmarshal(body, r); err != nil {
+			return err
+		}
+	}
+
+	return nil
+
 }
 
 func (c *Client) CloseIdleConnections() {
