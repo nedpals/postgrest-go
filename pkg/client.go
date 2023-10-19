@@ -61,7 +61,8 @@ func (c Client) Rpc(f string, params interface{}) (*http.Response, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", "/rpc/"+f, bytes.NewBuffer(b))
+	url := c.Transport.baseURL.String() + "/rpc/" + f
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(b))
 	if err != nil {
 		return nil, err
 	}
