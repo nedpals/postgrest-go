@@ -55,25 +55,80 @@ func (c *Client) From(table string) *RequestBuilder {
 	}
 }
 
-func (c Client) Rpc(f string, params interface{}) (*http.Response, error) {
-	b, err := json.Marshal(params)
+type RpcRequestBuilder struct {
+	client     *Client
+	path       string
+	header     http.Header
+	httpMethod string
+	params     map[string]interface{}
+}
+
+func (c *Client) Rpc(f string, params map[string]interface{}) *RpcRequestBuilder {
+	return &RpcRequestBuilder{
+		client:     c,
+		path:       c.Transport.baseURL.String() + "rpc/" + f,
+		header:     http.Header{},
+		httpMethod: http.MethodPost,
+		params:     params,
+	}
+}
+
+func (r *RpcRequestBuilder) Execute(result interface{}) error {
+	return r.ExecuteWithContext(context.Background(), result)
+}
+
+func (r *RpcRequestBuilder) ExecuteWithContext(ctx context.Context, result interface{}) error {
+	data, err := json.Marshal(r.params)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	url := c.Transport.baseURL.String() + "/rpc/" + f
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(b))
+	req, err := http.NewRequestWithContext(ctx, r.httpMethod, r.path, bytes.NewBuffer(data))
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	req.Header = c.Headers()
-	resp, err := c.session.Do(req)
-	if err != nil {
-		return nil, err
+	req.Header = r.client.Headers()
+
+	// inject/override custom headers
+	for key, vals := range r.header {
+		for _, val := range vals {
+			req.Header.Set(key, val)
+		}
 	}
+
+	req.URL.Path = req.URL.Path[1:]
+	req.URL = r.client.Transport.baseURL.ResolveReference(req.URL)
+
+	resp, err := r.client.session.Do(req)
+	if err != nil {
+		return err
+	}
+
 	defer resp.Body.Close()
-	return resp, nil
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	statusOK := resp.StatusCode >= 200 && resp.StatusCode < 300
+	if !statusOK {
+		reqError := RequestError{HTTPStatusCode: resp.StatusCode}
+
+		if err = json.Unmarshal(body, &reqError); err != nil {
+			return err
+		}
+
+		return &reqError
+	}
+
+	if resp.StatusCode != http.StatusNoContent && r != nil {
+		if err = json.Unmarshal(body, result); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (c *Client) CloseIdleConnections() {
