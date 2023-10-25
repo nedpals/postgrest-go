@@ -375,10 +375,6 @@ func (b *SelectRequestBuilder) SingleValue() *SelectRequestBuilder {
 	return b
 }
 
-type SelectRequestBuilder struct {
-	FilterRequestBuilder
-}
-
 func (b *SelectRequestBuilder) Limit(size int) *SelectRequestBuilder {
 	return b.LimitWithOffset(size, 0)
 }
