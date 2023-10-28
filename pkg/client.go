@@ -2,9 +2,11 @@ package postgrest_go
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 )
@@ -21,7 +23,7 @@ type ClientOption func(c *Client)
 func NewClient(baseURL url.URL, opts ...ClientOption) *Client {
 	transport := PostgrestTransport{
 		baseURL: baseURL,
-		parent:  http.DefaultTransport,
+		Parent:  http.DefaultTransport,
 	}
 
 	c := Client{

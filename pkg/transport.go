@@ -10,7 +10,7 @@ type PostgrestTransport struct {
 	baseURL url.URL
 	debug   bool
 
-	parent http.RoundTripper
+	Parent http.RoundTripper
 }
 
 func (c *PostgrestTransport) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -25,5 +25,5 @@ func (c *PostgrestTransport) RoundTrip(req *http.Request) (*http.Response, error
 		fmt.Println("---------------------------------")
 	}
 
-	return c.parent.RoundTrip(req)
+	return c.Parent.RoundTrip(req)
 }
