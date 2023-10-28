@@ -340,8 +340,12 @@ type SelectRequestBuilder struct {
 }
 
 // OrderBy sets the ordering column and direction for the SELECT request.
-func (b *SelectRequestBuilder) OrderBy(column, direction string) *SelectRequestBuilder {
-	b.params.Set("order", column+"."+direction)
+func (b *SelectRequestBuilder) OrderBy(column string, ascend bool) *SelectRequestBuilder {
+	value := "asc"
+	if !ascend {
+		value = "desc"
+	}
+	b.params.Set("order", column+"."+value)
 	return b
 }
 
