@@ -374,3 +374,18 @@ func (b *SelectRequestBuilder) SingleValue() *SelectRequestBuilder {
 	b.params.Set("single-value", "true")
 	return b
 }
+
+func (b *SelectRequestBuilder) Limit(size int) *SelectRequestBuilder {
+	return b.LimitWithOffset(size, 0)
+}
+
+func (b *SelectRequestBuilder) LimitWithOffset(size int, start int) *SelectRequestBuilder {
+	b.header.Set("Range-Unit", "items")
+	b.header.Set("Range", fmt.Sprintf("%d-%d", start, start+size-1))
+	return b
+}
+
+func (b *SelectRequestBuilder) Single() *SelectRequestBuilder {
+	b.header.Set("Accept", "application/vnd.pgrst.object+json")
+	return b
+}
