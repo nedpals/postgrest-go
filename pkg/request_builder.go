@@ -200,38 +200,38 @@ func (b *FilterRequestBuilder) Filter(column, operator, criteria string) *Filter
 		b.negateNext = false
 		operator = "not." + operator
 	}
-	b.params.Add(SanitizeParam(column), operator+"."+criteria)
+	b.params.Add(column, operator+"."+criteria)
 	return b
 }
 
 // Eq adds an equality filter condition to the request.
 func (b *FilterRequestBuilder) Eq(column, value string) *FilterRequestBuilder {
-	return b.Filter(column, "eq", SanitizeParam(value))
+	return b.Filter(column, "eq", value)
 }
 
 // Neq adds a not-equal filter condition to the request.
 func (b *FilterRequestBuilder) Neq(column, value string) *FilterRequestBuilder {
-	return b.Filter(column, "neq", SanitizeParam(value))
+	return b.Filter(column, "neq", value)
 }
 
 // Gt adds a greater-than filter condition to the request.
 func (b *FilterRequestBuilder) Gt(column, value string) *FilterRequestBuilder {
-	return b.Filter(column, "gt", SanitizeParam(value))
+	return b.Filter(column, "gt", value)
 }
 
 // Gte adds a greater-than-or-equal filter condition to the request.
 func (b *FilterRequestBuilder) Gte(column, value string) *FilterRequestBuilder {
-	return b.Filter(column, "gte", SanitizeParam(value))
+	return b.Filter(column, "gte", value)
 }
 
 // Lt adds a less-than filter condition to the request.
 func (b *FilterRequestBuilder) Lt(column, value string) *FilterRequestBuilder {
-	return b.Filter(column, "lt", SanitizeParam(value))
+	return b.Filter(column, "lt", value)
 }
 
 // Lte adds a less-than-or-equal filter condition to the request.
 func (b *FilterRequestBuilder) Lte(column, value string) *FilterRequestBuilder {
-	return b.Filter(column, "lte", SanitizeParam(value))
+	return b.Filter(column, "lte", value)
 }
 
 // Is adds an IS filter condition to the request.
