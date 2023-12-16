@@ -386,10 +386,12 @@ func (b *SelectRequestBuilder) SingleValue() *SelectRequestBuilder {
 	return b
 }
 
+// Limit will restrict the number of results via the Range header.
 func (b *SelectRequestBuilder) Limit(size int) *SelectRequestBuilder {
 	return b.LimitWithOffset(size, 0)
 }
 
+// LimitWithOffset is essentially pagination by providing a start and end index.
 func (b *SelectRequestBuilder) LimitWithOffset(size int, start int) *SelectRequestBuilder {
 	b.header.Set("Range-Unit", "items")
 	b.header.Set("Range", fmt.Sprintf("%d-%d", start, start+size-1))
@@ -401,6 +403,8 @@ func (b *SelectRequestBuilder) Single() *SelectRequestBuilder {
 	return b
 }
 
+// Count will convert the request from selecting content to instead perform only a requets for a count of objects.
+// It will perform a HEAD request instead of
 func (b *SelectRequestBuilder) Count() *SelectRequestBuilder {
 	b.header.Set("Prefer", "count=exact")
 	b.isCount = true
