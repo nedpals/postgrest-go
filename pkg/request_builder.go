@@ -404,7 +404,7 @@ func (b *SelectRequestBuilder) Single() *SelectRequestBuilder {
 }
 
 // Count will convert the request from selecting content to instead perform only a requets for a count of objects.
-// It will perform a HEAD request instead of
+// It will perform a HEAD request instead of a full GET. The result from this query will now be a count instead of rows.
 func (b *SelectRequestBuilder) Count() *SelectRequestBuilder {
 	b.header.Set("Prefer", "count=exact")
 	b.isCount = true
