@@ -345,6 +345,11 @@ func (b *FilterRequestBuilder) Ad(column string, values []string) *FilterRequest
 	return b.Filter(column, "ad", fmt.Sprintf("{%s}", strings.Join(sanitized, ",")))
 }
 
+// IsNull adds a is null filter condition to the request.
+func (b *FilterRequestBuilder) IsNull(column string) *FilterRequestBuilder {
+	return b.Filter(column, "is", "null")
+}
+
 // FilterRequestBuilder represents a builder for SELECT requests.
 type SelectRequestBuilder struct {
 	FilterRequestBuilder
