@@ -200,7 +200,7 @@ func (b *FilterRequestBuilder) Filter(column, operator, criteria string) *Filter
 		b.negateNext = false
 		operator = "not." + operator
 	}
-	b.params.Add(SanitizeParam(column), operator+"."+criteria)
+	b.params.Add(column, operator+"."+criteria)
 	return b
 }
 
