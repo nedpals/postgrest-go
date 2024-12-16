@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -114,6 +115,7 @@ type QueryRequestBuilder struct {
 	path       string
 	httpMethod string
 	json       interface{}
+	isCount    bool
 }
 
 // Execute sends the query request and unmarshals the response JSON into the provided object.
@@ -174,6 +176,15 @@ func (b *QueryRequestBuilder) ExecuteWithContext(ctx context.Context, r interfac
 	}
 
 	if resp.StatusCode != http.StatusNoContent && r != nil {
+		if b.isCount {
+			contentRange := resp.Header.Get("Content-Range")
+			contentRangeParts := strings.Split(contentRange, "/")
+			if len(contentRangeParts) != 2 {
+				return errors.New("invalid content range returned from count request")
+			}
+			return json.Unmarshal([]byte(contentRangeParts[1]), r)
+		}
+
 		if err = json.Unmarshal(body, r); err != nil {
 			return err
 		}
@@ -200,7 +211,7 @@ func (b *FilterRequestBuilder) Filter(column, operator, criteria string) *Filter
 		b.negateNext = false
 		operator = "not." + operator
 	}
-	b.params.Add(SanitizeParam(column), operator+"."+criteria)
+	b.params.Add(column, operator+"."+criteria)
 	return b
 }
 
@@ -377,5 +388,31 @@ func (b *SelectRequestBuilder) WithoutCount() *SelectRequestBuilder {
 // SingleValue sets the single value behavior for the SELECT request.
 func (b *SelectRequestBuilder) SingleValue() *SelectRequestBuilder {
 	b.params.Set("single-value", "true")
+	return b
+}
+
+// Limit will restrict the number of results via the Range header.
+func (b *SelectRequestBuilder) Limit(size int) *SelectRequestBuilder {
+	return b.LimitWithOffset(size, 0)
+}
+
+// LimitWithOffset is essentially pagination by providing a start and end index.
+func (b *SelectRequestBuilder) LimitWithOffset(size int, start int) *SelectRequestBuilder {
+	b.header.Set("Range-Unit", "items")
+	b.header.Set("Range", fmt.Sprintf("%d-%d", start, start+size-1))
+	return b
+}
+
+func (b *SelectRequestBuilder) Single() *SelectRequestBuilder {
+	b.header.Set("Accept", "application/vnd.pgrst.object+json")
+	return b
+}
+
+// Count will convert the request from selecting content to instead perform only a requets for a count of objects.
+// It will perform a HEAD request instead of a full GET. The result from this query will now be a count instead of rows.
+func (b *SelectRequestBuilder) Count() *SelectRequestBuilder {
+	b.header.Set("Prefer", "count=exact")
+	b.isCount = true
+	b.httpMethod = "HEAD"
 	return b
 }
